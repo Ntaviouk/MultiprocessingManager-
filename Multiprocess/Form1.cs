@@ -46,7 +46,7 @@ namespace Multiprocess
         {
             int ProcessesNums = Int32.Parse(textBoxProcessesNums.Text);
             int A = Int32.Parse(textBoxA.Text);
-            int B = Int32.Parse(textBoxA.Text);
+            int B = Int32.Parse(textBoxB.Text);
             int Steps = Int32.Parse(textBoxSteps.Text);
 
             for (int i = 0; i < ProcessesNums; i++)
@@ -62,9 +62,27 @@ namespace Multiprocess
                 process.StartInfo.UseShellExecute = true;
                 process.Start();
 
+                process.EnableRaisingEvents = true; // Додаємо цю властивість, щоб слідкувати за завершенням процесу
+                process.Exited += Process_Exited; // Підписуємося на подію завершення процесу
+
                 processes.Add(process);
             }
             SetComboBox();
+        }
+
+        private void Process_Exited(object sender, EventArgs e)
+        {
+            Process process = (Process)sender;
+
+            DateTime startTime = process.StartTime;
+            DateTime endTime = process.ExitTime;
+
+            TimeSpan duration = endTime - startTime;
+
+            listBox1.Invoke(new Action(() =>
+            {
+                listBox1.Items.Add($"Process {processes.IndexOf(process)} completed in {duration.TotalSeconds} seconds");
+            }));
         }
 
         private void SetComboBox()
